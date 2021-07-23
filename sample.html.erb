@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en" dir="ltr">
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title></title>
+    <style media="screen">
+      form{
+        text-align: center;
+        background-color: green;
+        padding: 20px 0;
+      }
+      body{
+      }
+    </style>
+  </head>
+  <body>
+    <% require 'pg' %>
+    <% connection = PG::connect(dbname: "goya") %>
+    <% connection.internal_encoding = "UTF-8" %>
+    <% result = connection.exec("select * from crops where give_for != 'Autoconsommation';") %>
+    <% data = [] %>
+    <% result.each do |record| %>
+      <%  data << "<tr><td>#{record["length"]}</td><td>#{record["weight"]}</td><td>#{record["give_for"]}</td><td>#{record["quality"]}</td><td>#{record["date"]}</td></tr>" %>
+    <% end %>
+    <form action="validation.cgi" method="post">
+      <input type="hidden" name="query" value="<%= data.join('') %>">
+      <label>Click <input type="submit" name="button_1" value="QUERY 1"> to display a page with goya information although the transferee is not self-consumption</label>
+    </form>
+
+    <% query = connection.exec("select * from crops where quality = 'false';") %>
+    <% tab = [] %>
+    <% query.each do |value| %>
+      <% tab << "<tr><td>#{value["length"]}</td><td>#{value["weight"]}</td><td>#{value["give_for"]}</td><td>#{value["quality"]}</td><td>#{value["date"]}</td></tr>" %>
+    <% end %>
+    <form action="validation.cgi" method="post">
+      <input type="hidden" name="query" value="<%= tab.join('') %>">
+      <label>Click <input type="submit" name="button_2" value="QUERY 2"> to display a page with goya information of poor quality (false)</label>
+    </form>
+  </body>
+</html>
